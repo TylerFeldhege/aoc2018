@@ -9,14 +9,30 @@ ClassMethod Run1(verbose = 0) As %Integer
 {
     set stream=..GetInput(..#InputFile)
 
-    set currentDepth = ""
-    set previousDepth = ""
-    set increaseCount = 0
-
+    set inputList = ""
     while 'stream.AtEnd{
         set line = stream.ReadLine()
-        w line,1
+        set $LIST(inputList,*+1) = line
+        //w line,!
     }
+
+    set frequency = 0
+
+    set ptr=0
+    while $LISTNEXT(inputList,ptr,value){
+        set operator = $E(value,1,1)
+        set number = $E(value,2,*)
+        if operator = "+"{
+            set frequency = frequency + number
+        }
+        if operator = "-"{
+            set frequency = frequency - number
+        }
+    }
+
+
+
+    w frequency,!
 
     return $$$OK
 }
@@ -29,35 +45,37 @@ ClassMethod Run2(verbose = 0) As %Integer
     while 'stream.AtEnd{
         set line = stream.ReadLine()
         set $LIST(inputList,*+1) = line
+        //w line,!
     }
 
-    set tripleList = ""
-    FOR i=1:1:$LISTLENGTH(inputList) {
-        set index1 = i
-        set index2 = i+1
-        set index3 = i+2
+    set frequency = 0
+    set $LIST(freqList,*+1) = 0
+    set doublefreq = ""
 
-        if index3 <= $LISTLENGTH(inputList){
-            set $LIST(tripleList,*+1) = $LIST(inputList,index1) + $LIST(inputList,index2) + $LIST(inputList,index3)
+    while doublefreq = ""{
+        set ptr=0
+        while (($LISTNEXT(inputList,ptr,value)) && (doublefreq = "")){
+            set operator = $E(value,1,1)
+            set number = $E(value,2,*)
+            if operator = "+"{
+                set frequency = frequency + number
+            }
+            if operator = "-"{
+                set frequency = frequency - number
+            }
+
+            if $LISTFIND(freqList,frequency) '= 0{
+                set doublefreq = frequency
+            }
+            
+            set $LIST(freqList,*+1) = frequency
+            
         }
     }
 
 
-    set previousTrip = ""
-    set currentTrip = ""
-    set increaseCount = 0
+    w doublefreq,!
 
-    set ptr = 0
-    WHILE $LISTNEXT(tripleList,ptr,currentTripValue){
-        set previousTrip = currentTrip
-        set currentTrip = currentTripValue
-
-        if ((currentTrip>previousTrip)&&(previousTrip '= "")){
-            set increaseCount = increaseCount + 1
-        }
-    }
-
-    w increaseCount,!
     return $$$OK
 }
 
