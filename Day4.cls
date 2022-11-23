@@ -106,42 +106,98 @@ ClassMethod Run1(verbose = 0) As %Integer
     set answer = sleepiestMin * $E(sleepiestGuard,2,*)
     w "Answer: ",answer
 
-
-
     return $$$OK
 }
 
 ClassMethod Run2(verbose = 0) As %Integer
 {
 
-    set arr = ""
-    set arr("Tyler")=4
-    set arr("Grant")=6
+   set stream=..GetInput(..#InputFile)
 
-    if $DATA(arr("Kallie")){
-        w "Kallie Found",!
+    //set inputList = ""
+    while 'stream.AtEnd{
+        set line = stream.ReadLine()
+        #; set $LIST(inputList,*+1) = line
+        #; w line,!
+        set inputList(line)=""
     }
-    if $DATA(arr("Tyler")){
-        w "Tyler Found",!
+    // Sort Input
+    set myKey = ""
+    set key = $ORDER(inputList(""))
+    while (key '= ""){
+        set myKey = myKey_key_"$"
+        set key = $ORDER(inputList(key))
+    }
+    set sortedInputList = $LISTFROMSTRING(myKey,"$")
+
+    set guardList = ""
+
+    set ptr=0
+    while $LISTNEXT(sortedInputList,ptr,currentLine){
+        w "HIT",!
+        set currentText = $P(currentLine," ",3,*)
+        if $P(currentLine," ",3,3) = "Guard"{
+            set currentGuard = $P(currentLine," ",4,4)
+            if $LISTFIND(guardList,currentGuard)=0{
+                set $LIST(guardList,*+1) = currentGuard
+            }
+        }
     }
 
-    #; set arr("Tyler") = arr("Tyler") + 15
+    w "Guards: ",$LISTTOSTRING(guardList),!
 
-    #; set key = $ORDER(arr(""))
-    #; while (key '= ""){
-    #;     w "Guard: ",key,!
-    #;     w "Sleep Time: ",arr(key),!
-    #;     set key = $ORDER(arr(key))
+    set sleepiestGuard = ""
+    set sleepiestMinute = ""
+    set sleepiestMinuteCount = 0
 
-    #; }
+    set ptr = 0
+    while $LISTNEXT(guardList,ptr,currentListGuard){
+        set minuteTracker = ""
+        
+        set ptr2 = 0
+        while $LISTNEXT(sortedInputList,ptr2,currentLine){
+            set currentText = $P(currentLine," ",3,*)
+            if $P(currentLine," ",3,3) = "Guard"{
+                set currentGuard = $P(currentLine," ",4,4)
+            }
 
+            if currentGuard = currentListGuard{
+                if $P(currentLine," ",3,3) = "falls"{
+                    set startTime = $E(currentLine,16,17)
+                }
+                if $P(currentLine," ",3,3) = "wakes"{
+                    set endTime = $E(currentLine,16,17)
+                    for i=startTime:1:endTime-1{
+                        if $DATA(minuteTracker(i)){
+                            set minuteTracker(i) = minuteTracker(i) + 1
+                        }else{
+                            set minuteTracker(i) = 1
+                        }
+                    }
+                }
+            }
 
-    #; set $LIST(inputList,"Tyler") = 0
-    #; set $LIST(inputList,"Grant") = 4
+            set key = $ORDER(minuteTracker(""))
+            while (key '= ""){
+                if sleepiestMinuteCount < minuteTracker(key){
+                    set sleepiestMinuteCount = minuteTracker(key)
+                    set sleepiestMinute = key
+                    set sleepiestGuard = currentListGuard
 
-    #; w $LIST(inputList,"Grant")
-    #; set $LIST(inputList,"Grant") = inputList.GetAt("Grant") + 15
-    #; w inputList.GetAt("Grant")
+                }
+                set key = $ORDER(minuteTracker(key))
+            }
+        }
+    }
+
+    w "sleepiest Minute: ",sleepiestMinute,!
+    w "sleepiest Minute Count: ",sleepiestMinuteCount,!
+    w "sleepiest Guard: ",sleepiestGuard,!
+
+    set answer = sleepiestMinute * $E(sleepiestGuard,2,*)
+    w "Answer: ",answer,!
+
+    //w $LISTFROMSTRING(sortedInputList)
 }
 
 }
